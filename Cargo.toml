@@ -1,0 +1,27 @@
+[package]
+name = "testRustF051"
+version = "0.1.0"
+authors = ["lechub <lechub@tlen.pl>"]
+edition = "2018"
+
+[profile.release]
+opt-level = 's'
+#opt-level = 'z' # turn on maximum optimizations. We only have 64kB
+#lto = true      # Link-time-optimizations for further size reduction
+#debug = true
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cortex-m = "^0.6.0"      # Access to the generic ARM peripherals
+cortex-m-rt = "^0.6.13"  # Startup code for the ARM Core
+#embedded-hal = "^0.2.4"  # Access to generic embedded functions (`set_high`)
+panic-halt = "^0.2.0"    # Panic handler
+
+# Access to the stm32f0
+[dependencies.stm32f0]
+version = "^0.12.1"
+#features = ["stm32f051", "rt", "medium"]
+features = ["stm32f0x1", "rt"]
+#version = "^0.17.1"
