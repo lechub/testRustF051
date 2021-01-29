@@ -7,12 +7,22 @@
 //	tail: usize,
 //}
 
-
 pub struct Fifo2<T>{
 	head: usize,
 	tail: usize,
 	data: T,
 }
+
+macro_rules! make_fifo {
+    ($size:literal) => {{
+		Fifo{
+			max_size: $size,
+			data: [0; $size +1],
+		}        
+    }}
+}
+
+
 
 impl<u8> Fifo2<u8>{
 	pub const fn new(aa:u8) ->Self{
@@ -24,12 +34,12 @@ impl<u8> Fifo2<u8>{
 	}
 }
 
-impl<[u8; usize]> Fifo2<[u8; usize]>{
+impl Fifo2<[u8; usize]>{
 	pub const fn new(size: usize) -> Self{
 		Fifo2{
 			head: 0,
 			tail: 0,
-			data: [0; size],
+			data: [0; usize],
 		}
 	}
 }
