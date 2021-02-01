@@ -71,7 +71,7 @@ fn main() -> ! {
 	
 	//let ff = make_fifo!(20);
 
-	let ff = fifo::Fifo2::new();
+	let ff = fifo::Fifo2::new(10);
 		
 	
     loop {

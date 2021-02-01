@@ -34,15 +34,15 @@ impl<u8> Fifo2<u8>{
 	}
 }
 
-impl Fifo2<[u8; usize]>{
-	pub const fn new(size: usize) -> Self{
-		Fifo2{
-			head: 0,
-			tail: 0,
-			data: [0; usize],
-		}
-	}
-}
+//impl Fifo2<[u8; usize]>{
+//	pub const fn new(size: usize) -> Self{
+//		Fifo2{
+//			head: 0,
+//			tail: 0,
+//			data: [0; usize],
+//		}
+//	}
+//}
 
 
 
@@ -82,20 +82,20 @@ struct FifoStr{
 //    }
 //}
 
-impl FifoStr  {
-	
-    pub fn new(size: usize) -> FifoStr {
-       //Self::default()
-		//let tab =  [0; size];
-		
-		FifoStr{
-			head: 0,
-			tail: 0,
-			data: [0;size],
-		}
-
-    }
-
-}
+//impl FifoStr  {
+//	
+//    pub fn new(size: usize) -> FifoStr {
+//       //Self::default()
+//		//let tab =  [0; size];
+//		
+//		FifoStr{
+//			head: 0,
+//			tail: 0,
+//			data: [0;size],
+//		}
+//
+//    }
+//
+//}
 
 
