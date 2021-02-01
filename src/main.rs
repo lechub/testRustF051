@@ -71,7 +71,8 @@ fn main() -> ! {
 	
 	//let ff = make_fifo!(20);
 
-	let ff = fifo::Fifo2::new(10);
+	let mut buf1 = [0_u8; 20];
+	let ff = fifo::Fifo::new(&mut buf1);
 		
 	
     loop {
