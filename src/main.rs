@@ -74,6 +74,7 @@ fn main() -> ! {
 	let mut buf1 = [0_u8; 20];
 	let ff = fifo::Fifo::new(&mut buf1);
 		
+	let zz = fifo::make_fifo!(10);
 	
     loop {
         gpioc.bsrr.write(|w| w.bs13().set_bit());

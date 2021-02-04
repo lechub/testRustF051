@@ -117,8 +117,12 @@ impl<'a> Fifo<'a>{
 		loop{
 			let data_byte = source.get();
 			match data_byte{
-				None => Ok(true),
-				_ => self.put(Some(data_byte),
+				None => return Ok(true),
+				Some(a) => {
+					 if let Err(err) = self.put(a) {
+						return Err(err);
+				    }
+				}
 			};
 		}
 	}
@@ -127,8 +131,17 @@ impl<'a> Fifo<'a>{
 
 }
 
-
-
+//macro_rules! make_fifo {
+//    ($size:literal) => {
+//	let mut buf1 = [0_u8; $size];
+//	Fifo::new(&mut buf1);
+//	
+//	}
+//}
+//
+//fn mf(aa: <'a> u8)->Fifo<'a>{
+//	make_fifo!(aa)
+//}
 
 //struct Fifo2<T: ?Sized>{
 //	head: usize,
