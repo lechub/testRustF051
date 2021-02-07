@@ -22,6 +22,8 @@ use stm32f0::stm32f0x1;
 
 mod fifo;
 
+//use fifo::make_fifo!;
+
 //struct Fifo<T: ?Sized>{
 //	max_size: usize,
 //	data: T,
@@ -42,6 +44,7 @@ mod fifo;
 //	make_fifo!(ss)
 //}
 
+//#[macro_use] crate fifo make_fifo!;
 
 //extern crate stm32-rs;
 //use panic_halt; // When a panic occurs, stop the microcontroller
@@ -72,9 +75,13 @@ fn main() -> ! {
 	//let ff = make_fifo!(20);
 
 	let mut buf1 = [0_u8; 20];
-	let ff = fifo::Fifo::new(&mut buf1);
+	let mut ff = fifo::Fifo::new(&mut buf1);
+	ff.put(7);
 		
-	let zz = fifo::make_fifo!(10);
+	//let z1 = fifo::mf!(10);
+	let mut z2 = make_fifo!(10);
+	z2.put(66);
+	let _cc = z2.get();
 	
     loop {
         gpioc.bsrr.write(|w| w.bs13().set_bit());
