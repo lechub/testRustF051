@@ -74,14 +74,31 @@ fn main() -> ! {
 	
 	//let ff = make_fifo!(20);
 
+	
 	let mut buf1 = [0_u8; 20];
 	let mut ff = fifo::Fifo::new(&mut buf1);
-	ff.put(7);
+	match ff.put(7){
+		Err(_e) => (),
+		_	=> ()		
+	};
 		
 	//let z1 = fifo::mf!(10);
-	let mut z2 = make_fifo!(10);
-	z2.put(66);
+	//let mut z2 = make_fifo!(10);
+	let mut buf1 = [0_u8, 15];
+	let mut z2 = fifo::Fifo::new(&mut buf1);
+	match z2.put(66){
+		Err(_e) => (),
+		_	=> ()		
+	};
+	
 	let _cc = z2.get();
+	let mut buf1 = [0_u8, 10];
+	let mut z3 = fifo::Fifo::new(&mut buf1);
+//	let mut z3 = make_fifo!(10);
+	match z3.put_all(&mut z2){
+		Err(_e) => (),
+		_	=> ()		
+	};
 	
     loop {
         gpioc.bsrr.write(|w| w.bs13().set_bit());
@@ -90,3 +107,7 @@ fn main() -> ! {
         //cortex_m::asm::delay(2000000);
     }
 }
+
+
+
+

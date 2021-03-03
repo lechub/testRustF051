@@ -17,5 +17,6 @@
 		</buildCommand>
 	</buildSpec>
 	<natures>
+		<nature>org.eclipse.linuxtools.rpm.createrepo.createreponature</nature>
 	</natures>
 </projectDescription>

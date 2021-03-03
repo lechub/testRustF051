@@ -40,6 +40,14 @@ impl<'a> Fifo<'a>{
 		}
 	}
 	
+//		pub fn new(data: const size: usize)->Self{
+//		Fifo{
+//			head: 0,
+//			tail: 0,
+//			data,
+//		}
+//	}
+	
 //	pub fn new(size: usize)->Self{
 //		let 
 //		Fifo{
@@ -156,18 +164,18 @@ impl<'a> Fifo<'a>{
 //    }}
 //}
 
-#[macro_export]
-macro_rules! make_fifo {
-    ($size:literal) => {{
-		let mut newFifoData = [0; $size];
-        crate::fifo::Fifo::new(&mut newFifoData)
-    }}
-}
-
-
-fn aa(){
-	let _zz = make_fifo!(10);
-}
+//#[macro_export]
+//macro_rules! make_fifo {
+//    ($size:literal) => {{
+//		let mut newFifoData = [0; $size];
+//        crate::fifo::Fifo::new(&mut newFifoData)
+//    }}
+//}
+//
+//
+//fn aa(){
+//	let _zz = make_fifo!(10);
+//}
 
 
 
