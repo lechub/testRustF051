@@ -1,4 +1,4 @@
-#![no_std]
+//#![no_std]
 
 //struct Fifo<T: ?Sized>{
 //	max_size: const usize,
@@ -7,8 +7,15 @@
 //	tail: usize,
 //}
 
+//extern crate heapless;
+use heapless::Vec; // fixed capacity `std::Vec`
+use heapless::spsc::Queue; // kolejka 
+
+use core::usize;
+
 
 pub enum FifoError{
+		NoErrors,
 		BufferEmpty,
 		BufferFull,
 		ConversionError,
@@ -23,93 +30,83 @@ pub enum FifoError{
 //	fn available_bytes(&self)-> usize;
 //}
 
+// pub struct Fifo2<const N: usize>{
+// 	head: usize,
+// 	tail: usize,
+// 	data: Vec<u8, N>; // = Vec::new(u8, N),
+// }
 
-pub struct Fifo<'a>{
-	head: usize,	// indeks zapisu - wskazuje wolny bajt do zapisu kolejnego bajtu - o ile jest miejsce
-	tail: usize,	// indeks odczytu - wskazuje bajt gotowy do odczytu, albo pusty bufor, gdy jest rowny head 
-	data: &'a mut [u8],
+
+pub struct Fifo<const N: usize>{
+	// head: usize,	// indeks zapisu - wskazuje wolny bajt do zapisu kolejnego bajtu - o ile jest miejsce
+	// tail: usize,	// indeks odczytu - wskazuje bajt gotowy do odczytu, albo pusty bufor, gdy jest rowny head 
+	// data: &'a mut [u8],
+	queue: Queue<u8, N>,
 }
 
 
-impl<'a> Fifo<'a>{
-	pub fn new(data: &'a mut [u8])->Self{
-		Fifo{
-			head: 0,
-			tail: 0,
-			data,
-		}
-	}
-	
-//		pub fn new(data: const size: usize)->Self{
-//		Fifo{
-//			head: 0,
-//			tail: 0,
-//			data,
-//		}
-//	}
-	
-//	pub fn new(size: usize)->Self{
-//		let 
-//		Fifo{
-//			head: 0,
-//			tail: 0,
-//			data: |size| {[0; 6]},
-//		}
-//	}
-	
-//	macro_rules! make_fifo {
-//    ($size:literal) => {{
-//		Fifo::new(&mut [0_u8; $size]);  
-//    }}
-//}
+trait ByteProducer{
+	fn getp(&mut self) -> Option<u8>;
+}
+trait ByteConsumer{
+	fn put(&mut self, byteValue: u8) -> Result<bool, FifoError>;
+}
 
-	
-	fn increment_index(&self, index: usize)-> usize{
-		let new_index = index + 1;
-		if new_index >= self.data.len() { return 0 };
-		new_index	 
-	}
-	
-	pub fn put(&mut self, znak: u8) -> Result<bool, FifoError> {
-		let var_out = self.tail;
-		let var_in = self.head;
-		let var_inc = self.increment_index(var_in);
-		if var_inc == var_out {
-			return Err(FifoError::BufferFull);
+impl<const N: usize> Fifo<N>{
+	pub const fn new()->Self{
+		Self{
+			queue: Queue::new()
 		}
-		self.data[var_in] = znak;	// zapisanie bajtu
-		self.head = var_inc;	// oraz przesunięcie indeksu
-		Ok(true)
 	}
 	
+	
+	#[inline]
+	pub fn put(&mut self, byteValue: u8) -> Result<bool, FifoError> {
+		match self.queue.enqueue(byteValue){
+//    		Ok(_) => return Ok(true),
+    		Err(_) => return Err(FifoError::BufferFull),
+			_ => Ok(true),
+		}
+	}
+	
+	#[inline]
 	pub fn get(&mut self) -> Option<u8> {
-		let var_in = self.head;
-		let var_out = self.tail;
-		if var_in == var_out {
-			return None;
-		}
-		let nowy = self.data[var_out];
-		self.tail = self.increment_index(var_out);
-		Some(nowy)
-	}
-	
-	/* maksumalna pojemność jest o 1 mniejsza niż rozmiar tablicy
-		 */
-	pub const fn max_capacity(&self) -> usize { 
-		self.data.len() -1
-	}
-	
-	pub fn used_bytes(&self) -> usize { 
-		let mut head_var = self.head;
-		let tail_var = self.tail;
-		if head_var < tail_var {
-			head_var += self.data.len();
-		}
-		head_var - tail_var
+		self.queue.dequeue()
 	}
 
-	pub fn available_bytes(&self) -> usize {
-		self.max_capacity() - self.used_bytes()
+	#[inline]
+	pub fn peek(&self) -> Option<u8> {
+		match self.queue.peek(){
+    		Some(byteValue) => return Some(*byteValue),
+    		None => None,
+		}
+	}
+
+	/* maksymalna pojemność jest o 1 mniejsza niż rozmiar tablicy
+		 */
+	#[inline]
+	pub const fn get_max_capacity(&self) -> usize { 
+		self.queue.capacity()
+	}
+
+	#[inline]
+	pub const fn is_empty(&self) -> bool { 
+		self.queue.is_empty()
+	}
+
+	#[inline]
+	pub const fn is_full(&self) -> bool { 
+		self.queue.is_full()
+	}
+
+	#[inline]
+	pub fn get_count(&self) -> usize {
+		self.queue.len()
+	}
+
+	#[inline]
+	pub fn get_available_space(&self) -> usize {
+		self.get_max_capacity() - self.get_count()
 	}
 
 /*  ***************************************************************
@@ -138,187 +135,45 @@ impl<'a> Fifo<'a>{
 		Some(result)
 	}
 
-	pub fn put_all(&mut self, source: &mut Fifo) -> Result<bool, FifoError>{	
+	pub fn put_all(&mut self, source: &mut dyn ByteProducer) -> Result<bool, FifoError>{	
 		loop{
 			let data_byte = source.get();
 			match data_byte{
 				None => return Ok(true),
 				Some(a) => {
-					 if let Err(err) = self.put(a) {
+					if let Err(err) = self.put(a) {
 						return Err(err);
-				    }
+					}
 				}
-			};
+			}
 		}
 	}
-	
 
-
-}
-
-
-//#[macro_export] 
-//macro_rules! make_fifo {
-//    ($size:literal) => {{
-//		$crate::fifo::Fifo::new(&mut [0_u8; $size]) 
-//    }}
-//}
-
-//#[macro_export]
-//macro_rules! make_fifo {
-//    ($size:literal) => {{
-//		let mut newFifoData = [0; $size];
-//        crate::fifo::Fifo::new(&mut newFifoData)
-//    }}
-//}
-//
-//
-//fn aa(){
-//	let _zz = make_fifo!(10);
-//}
-
-
-
-
-
-/*
-
-pub struct Fifo<'a>{
-	head: usize,	// indeks zapisu - wskazuje wolny bajt do zapisu kolejnego bajtu - o ile jest miejsce
-	tail: usize,	// indeks odczytu - wskazuje bajt gotowy do odczytu, albo pusty bufor, gdy jest rowny head 
-	data: &'a mut[u8],
-}
-
-impl<'a> Fifo<'a>{
-	pub fn new(tab: &'a mut [u8])->Self{
-		Fifo{
-			head: 0,
-			tail: 0,
-			data: tab,
+	pub fn put_bytes(&mut self, byteSlice: &[u8]) -> Result<bool, FifoError>{
+		for byte in byteSlice{
+			if let Err(err) = self.put(*byte){
+				return Err(err);
+			}
 		}
-	}
-	
-	pub fn new2(size: usize)->Self{
-		Fifo{
-			head: 0,
-			tail: 0,
-			data: [0; size],
-		}
-	}
-	
-//	macro_rules! make_fifo {
-//    ($size:literal) => {{
-//		Fifo::new(&mut [0_u8; $size]);  
-//    }}
-//}
-
-	
-	fn increment_index(&self, index: usize)-> usize{
-		let new_index = index + 1;
-		if new_index >= self.data.len() { return 0 };
-		new_index	 
-	}
-	
-	pub fn put(&mut self, znak: u8) -> Result<bool, FifoError> {
-		let var_out = self.tail;
-		let var_in = self.head;
-		let var_inc = self.increment_index(var_in);
-		if var_inc == var_out {
-			return Err(FifoError::BufferFull);
-		}
-		self.data[var_in] = znak;	// zapisanie bajtu
-		self.head = var_inc;	// oraz przesunięcie indeksu
 		Ok(true)
 	}
-	
-	pub fn get(&mut self) -> Option<u8> {
-		let var_in = self.head;
-		let var_out = self.tail;
-		if var_in == var_out {
-			return None;
-		}
-		let nowy = self.data[var_out];
-		self.tail = self.increment_index(var_out);
-		Some(nowy)
-	}
-	
-	/* maksumalna pojemność jest o 1 mniejsza niż rozmiar tablicy
-		 */
-	pub const fn max_capacity(&self) -> usize { 
-		self.data.len() -1
-	}
-	
-	pub fn used_bytes(&self) -> usize { 
-		let mut head_var = self.head;
-		let tail_var = self.tail;
-		if head_var < tail_var {
-			head_var += self.data.len();
-		}
-		head_var - tail_var
-	}
 
-	pub fn available_bytes(&self) -> usize {
-		self.max_capacity() - self.used_bytes()
-	}
-
-/*  ***************************************************************
-	 * @brief  Pobiera 1 slowo 16-bitowe z bufora.
-	 * Czyli dwa kolejne bajty - pierwszy jako starszy bajt i drugi jako mlodszy
-	 * @return Zwraca slowo (16-bitowe) lub BUFFER_EMPTY_FLAG_U32, gdy pusty bufor
-	 */
-	pub fn get_u16(&mut self) -> Option<u16>{
-		let r1: u16 = self.get()?.into();
-		let r2: u16 = self.get()?.into();
-		let result = (r1 << 8)|r2;
-		Some(result)
-	}
-
-
-/* ***************************************************************
-	 * @brief  Pobiera 1 slowo 32-bitowe z bufora.
-	 * Czyli 4 kolejne bajty - pierwszy jako najstarszy bajt
-	 * @param  result	Wskaznik do rezultatu operacji
-	 * @return Zwraca slowo (32-bitowe). Poprawna operacja zwraca w *result true, niepoprawna false
-	 */
-	pub fn get_u32(&mut self) -> Option<u32>{	
-		let r1: u32 = self.get()?.into();
-		let r2: u32 = self.get()?.into();
-		let result  = (r1 << 16)|r2;
-		Some(result)
-	}
-
-	pub fn put_all(&mut self, source: &mut Fifo) -> Result<bool, FifoError>{	
-		loop{
-			let data_byte = source.get();
-			match data_byte{
-				None => return Ok(true),
-				Some(a) => {
-					 if let Err(err) = self.put(a) {
-						return Err(err);
-				    }
-				}
-			};
-		}
-	}
-	
-
+	// #[inline]
+    // pub fn as_mut_vec(&mut self) -> &mut Vec<u8, N> {
+    //     &mut self.queue.
+    // }
 
 }
 
-
-#[macro_export] 
-macro_rules! make_fifo {
-    ($size:literal) => {{
-		$crate::fifo::Fifo::new(&mut [0_u8; $size]) 
-    }}
+impl<const N: usize> ByteConsumer for Fifo<N>{
+	fn put(&mut self, byteValue: u8) -> Result<bool, FifoError> {
+		self.put(byteValue)
+	}
 }
 
-
-
-//fn aa(){
-//	let _zz = make_fifo!(10);
-//}
-
-*/
-
+impl<const N: usize> ByteProducer for Fifo<N>{
+	fn getp(&mut self) -> Option<u8> {
+		self.get()
+	}
+}
 

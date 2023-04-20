@@ -1,4 +1,6 @@
-// std and main are not available for bare metal software
+/*
+std and main are not available for bare metal software
+*/
 #![no_std]
 #![no_main]
 #[warn(non_snake_case)]
@@ -20,7 +22,9 @@ use cortex_m_rt::entry;
 extern crate stm32f0;
 use stm32f0::stm32f0x1;
 
+//mod fifo;
 mod fifo;
+use fifo::Fifo;
 
 //use fifo::make_fifo!;
 
@@ -67,38 +71,23 @@ fn main() -> ! {
 //        w.cnf13().bits(0b00)
 //    });
 	
-//	let aaa: Fifo<[u8; 30]> = Fifo{
-//		max_size: 30,
-//		data: [0; 30],
-//	};
-	
-	//let ff = make_fifo!(20);
 
-	
-	let mut buf1 = [0_u8; 20];
-	let mut ff = fifo::Fifo::new(&mut buf1);
+	let mut ff: Fifo<8> = Fifo::new();
 	match ff.put(7){
 		Err(_e) => (),
 		_	=> ()		
 	};
 		
-	//let z1 = fifo::mf!(10);
-	//let mut z2 = make_fifo!(10);
-	let mut buf1 = [0_u8, 15];
-	let mut z2 = fifo::Fifo::new(&mut buf1);
+	let mut z2: Fifo<10> = Fifo::new();
 	match z2.put(66){
 		Err(_e) => (),
 		_	=> ()		
 	};
+
+	z2.put_bytes(&[5_u8, 6_u8, 7_u8, 8_u8]);
 	
-	let _cc = z2.get();
-	let mut buf1 = [0_u8, 10];
-	let mut z3 = fifo::Fifo::new(&mut buf1);
-//	let mut z3 = make_fifo!(10);
-	match z3.put_all(&mut z2){
-		Err(_e) => (),
-		_	=> ()		
-	};
+	ff.put_all(&mut z2);
+
 	
     loop {
         gpioc.bsrr.write(|w| w.bs13().set_bit());
