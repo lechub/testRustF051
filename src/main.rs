@@ -1,6 +1,6 @@
-/*
-std and main are not available for bare metal software
-*/
+
+/*std and main are not available for bare metal software*/
+
 #![no_std]
 #![no_main]
 #[warn(non_snake_case)]

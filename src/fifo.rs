@@ -8,7 +8,7 @@
 //}
 
 //extern crate heapless;
-use heapless::Vec; // fixed capacity `std::Vec`
+//use heapless::Vec; // fixed capacity `std::Vec`
 use heapless::spsc::Queue; // kolejka 
 
 use core::usize;
@@ -45,10 +45,10 @@ pub struct Fifo<const N: usize>{
 }
 
 
-trait ByteProducer{
-	fn getp(&mut self) -> Option<u8>;
+pub trait ByteProducer{
+	fn get(&mut self) -> Option<u8>;
 }
-trait ByteConsumer{
+pub trait ByteConsumer{
 	fn put(&mut self, byteValue: u8) -> Result<bool, FifoError>;
 }
 
@@ -90,12 +90,12 @@ impl<const N: usize> Fifo<N>{
 	}
 
 	#[inline]
-	pub const fn is_empty(&self) -> bool { 
+	pub fn is_empty(&self) -> bool { 
 		self.queue.is_empty()
 	}
 
 	#[inline]
-	pub const fn is_full(&self) -> bool { 
+	pub fn is_full(&self) -> bool { 
 		self.queue.is_full()
 	}
 
@@ -172,7 +172,7 @@ impl<const N: usize> ByteConsumer for Fifo<N>{
 }
 
 impl<const N: usize> ByteProducer for Fifo<N>{
-	fn getp(&mut self) -> Option<u8> {
+	fn get(&mut self) -> Option<u8> {
 		self.get()
 	}
 }
