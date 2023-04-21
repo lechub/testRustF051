@@ -21,6 +21,7 @@ use cortex_m_rt::entry;
 //#[allow(unused_imports)]
 extern crate stm32f0;
 use stm32f0::stm32f0x1;
+use stm32f0xx_hal::{delay::Delay, pac, prelude::*}; // STM32F0 specific functions
 
 //mod fifo;
 mod fifo;
@@ -71,6 +72,31 @@ fn main() -> ! {
 //        w.cnf13().bits(0b00)
 //    });
 	
+/* 
+int main(int argc, char* argv[]) {
+	{
+		Hardware::init(); // CPU, freq, IRQ
+		QuickTask::hold(true);
+		Pinout * pins = Pinout::getInstance();
+		pins->init();
+		EpromVar::init();
+		Pomiar::init();
+		QuickTask::delayMsWithStoppedTasks(600);
+		RS485 * rs = RS485::getInstance(RS485::UsartName::Usart1); // rs.setup(RS485::USART_DEFAULT_BAUD_RATE, &pins->rs485Dir);
+		rs->setup();
+		Komunikacja::getInstance()->init(rs);
+		sygnalizacja_init();
+		QuickTask::hold(false);
+		WatchDog::init();
+	}
+	do{
+		WatchDog::reload();          // przeladowanie Watch-doga
+		QuickTask::poll();                // przegląd i uruchamianie tasków
+		Komunikacja::getInstance()->poll();
+	} while (true);     // do konca swiata
+}
+*/
+
 
 	let mut ff: Fifo<8> = Fifo::new();
 	match ff.put(7){

@@ -25,4 +25,5 @@ heapless = "0.7.16"
 version = "^0.15.1"
 #features = ["stm32f051", "rt", "medium"]
 features = ["stm32f0x1", "rt"]
+#features = ["stm32f0xx_hal", "rt"]
 #version = "^0.17.1"
